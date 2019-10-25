@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math"
+	"time"
 
 	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/cdproto/page"
@@ -16,13 +17,17 @@ import (
 
 var (
 	headless  = flag.Bool("headless", true, "run browser in headless mode")
+	timeout   = flag.Duration("timeout", 10*time.Second, "limit program execution")
 )
 
 func main() {
 	flag.Parse()
 
-	ctx, cancel := chromedp.NewExecAllocator(
-		context.Background(),
+	ctx, cancel := context.WithTimeout(context.Background(), *timeout)
+	defer cancel()
+
+	ctx, cancel = chromedp.NewExecAllocator(
+		ctx,
 		append(
 			chromedp.DefaultExecAllocatorOptions[:],
 			chromedp.Flag("headless", *headless),
