@@ -19,6 +19,7 @@ import (
 var (
 	headless  = flag.Bool("headless", true, "run browser in headless mode")
 	outputDir = flag.String("out", ".", "directory where to save screenshots")
+	selector  = flag.String("selector", "", "take screenshot of element matching selector")
 	timeout   = flag.Duration("timeout", 10*time.Second, "limit program execution")
 )
 
@@ -41,21 +42,23 @@ func main() {
 	ctx, cancel = chromedp.NewContext(ctx)
 	defer cancel()
 
-	// capture screenshot of an element
 	var buf []byte
-	if err := chromedp.Run(ctx, elementScreenshot(`https://www.google.com/`, `#main`, &buf)); err != nil {
-		log.Fatal(err)
-	}
-	if err := ioutil.WriteFile(filepath.Join(*outputDir, "elementScreenshot.png"), buf, 0644); err != nil {
-		log.Fatal(err)
-	}
-
-	// capture entire browser viewport, returning png with quality=90
-	if err := chromedp.Run(ctx, fullScreenshot(`https://brank.as/`, 90, &buf)); err != nil {
-		log.Fatal(err)
-	}
-	if err := ioutil.WriteFile(filepath.Join(*outputDir, "fullScreenshot.png"), buf, 0644); err != nil {
-		log.Fatal(err)
+	if *selector != "" {
+		// capture screenshot of an element
+		if err := chromedp.Run(ctx, elementScreenshot(`https://www.google.com/`, *selector, &buf)); err != nil {
+			log.Fatal(err)
+		}
+		if err := ioutil.WriteFile(filepath.Join(*outputDir, "elementScreenshot.png"), buf, 0644); err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		// capture entire browser viewport, returning png with quality=90
+		if err := chromedp.Run(ctx, fullScreenshot(`https://brank.as/`, 90, &buf)); err != nil {
+			log.Fatal(err)
+		}
+		if err := ioutil.WriteFile(filepath.Join(*outputDir, "fullScreenshot.png"), buf, 0644); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
@@ -63,8 +66,8 @@ func main() {
 func elementScreenshot(urlstr, sel string, res *[]byte) chromedp.Tasks {
 	return chromedp.Tasks{
 		chromedp.Navigate(urlstr),
-		chromedp.WaitVisible(sel, chromedp.ByID),
-		chromedp.Screenshot(sel, res, chromedp.NodeVisible, chromedp.ByID),
+		chromedp.WaitVisible(sel),
+		chromedp.Screenshot(sel, res, chromedp.NodeVisible),
 	}
 }
 
