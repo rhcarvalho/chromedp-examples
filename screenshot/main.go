@@ -26,6 +26,11 @@ var (
 func main() {
 	flag.Parse()
 
+	url := flag.Arg(0)
+	if url == "" {
+		log.Fatal("Missing URL")
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), *timeout)
 	defer cancel()
 
@@ -45,7 +50,7 @@ func main() {
 	var buf []byte
 	if *selector != "" {
 		// capture screenshot of an element
-		if err := chromedp.Run(ctx, elementScreenshot(`https://www.google.com/`, *selector, &buf)); err != nil {
+		if err := chromedp.Run(ctx, elementScreenshot(url, *selector, &buf)); err != nil {
 			log.Fatal(err)
 		}
 		if err := ioutil.WriteFile(filepath.Join(*outputDir, "elementScreenshot.png"), buf, 0644); err != nil {
@@ -53,7 +58,7 @@ func main() {
 		}
 	} else {
 		// capture entire browser viewport, returning png with quality=90
-		if err := chromedp.Run(ctx, fullScreenshot(`https://brank.as/`, 90, &buf)); err != nil {
+		if err := chromedp.Run(ctx, fullScreenshot(url, 90, &buf)); err != nil {
 			log.Fatal(err)
 		}
 		if err := ioutil.WriteFile(filepath.Join(*outputDir, "fullScreenshot.png"), buf, 0644); err != nil {
