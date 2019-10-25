@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math"
+	"path/filepath"
 	"time"
 
 	"github.com/chromedp/cdproto/emulation"
@@ -17,6 +18,7 @@ import (
 
 var (
 	headless  = flag.Bool("headless", true, "run browser in headless mode")
+	outputDir = flag.String("out", ".", "directory where to save screenshots")
 	timeout   = flag.Duration("timeout", 10*time.Second, "limit program execution")
 )
 
@@ -44,7 +46,7 @@ func main() {
 	if err := chromedp.Run(ctx, elementScreenshot(`https://www.google.com/`, `#main`, &buf)); err != nil {
 		log.Fatal(err)
 	}
-	if err := ioutil.WriteFile("elementScreenshot.png", buf, 0644); err != nil {
+	if err := ioutil.WriteFile(filepath.Join(*outputDir, "elementScreenshot.png"), buf, 0644); err != nil {
 		log.Fatal(err)
 	}
 
@@ -52,7 +54,7 @@ func main() {
 	if err := chromedp.Run(ctx, fullScreenshot(`https://brank.as/`, 90, &buf)); err != nil {
 		log.Fatal(err)
 	}
-	if err := ioutil.WriteFile("fullScreenshot.png", buf, 0644); err != nil {
+	if err := ioutil.WriteFile(filepath.Join(*outputDir, "fullScreenshot.png"), buf, 0644); err != nil {
 		log.Fatal(err)
 	}
 }
