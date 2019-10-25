@@ -4,16 +4,30 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 	"time"
 
 	"github.com/chromedp/chromedp"
 )
 
+var headless = flag.Bool("headless", true, "run browser in headless mode")
+
 func main() {
-	// create chrome instance
-	ctx, cancel := chromedp.NewContext(
+	flag.Parse()
+
+	ctx, cancel := chromedp.NewExecAllocator(
 		context.Background(),
+		append(
+			chromedp.DefaultExecAllocatorOptions[:],
+			chromedp.Flag("headless", *headless),
+		)...,
+	)
+	defer cancel()
+
+	// create chrome instance
+	ctx, cancel = chromedp.NewContext(
+		ctx,
 		chromedp.WithLogf(log.Printf),
 	)
 	defer cancel()

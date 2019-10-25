@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"io/ioutil"
 	"log"
 	"math"
@@ -13,9 +14,24 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
+var (
+	headless  = flag.Bool("headless", true, "run browser in headless mode")
+)
+
 func main() {
+	flag.Parse()
+
+	ctx, cancel := chromedp.NewExecAllocator(
+		context.Background(),
+		append(
+			chromedp.DefaultExecAllocatorOptions[:],
+			chromedp.Flag("headless", *headless),
+		)...,
+	)
+	defer cancel()
+
 	// create context
-	ctx, cancel := chromedp.NewContext(context.Background())
+	ctx, cancel = chromedp.NewContext(ctx)
 	defer cancel()
 
 	// capture screenshot of an element
