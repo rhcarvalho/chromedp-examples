@@ -36,9 +36,8 @@ func main() {
 	ctx, cancel = context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
-	// navigate to a page, wait for an element, click
 	var example string
-	err := chromedp.Run(ctx,
+	tasks := chromedp.Tasks{
 		chromedp.Navigate(`https://golang.org/pkg/time/`),
 		// wait for footer element is visible (ie, page is loaded)
 		chromedp.WaitVisible(`body > footer`),
@@ -46,7 +45,13 @@ func main() {
 		chromedp.Click(`#pkg-examples > div`, chromedp.NodeVisible),
 		// retrieve the value of the textarea
 		chromedp.Value(`#example_After .play .input textarea`, &example),
-	)
+	}
+	if !*headless {
+		tasks = append(tasks, chromedp.Sleep(3*time.Second))
+	}
+
+	// navigate to a page, wait for an element, click
+	err := chromedp.Run(ctx, tasks)
 	if err != nil {
 		log.Fatal(err)
 	}
